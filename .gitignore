@@ -1,0 +1,24 @@
+﻿################################################################################
+# Ten plik .gitignore został utworzony automatycznie przez Microsoft(R) Visual Studio.
+################################################################################
+
+/Portfolio/.vs/Portfolio/v15/Server/sqlite3/db.lock
+/Portfolio/Portfolio/obj/Debug/netcoreapp2.1
+/Portfolio/Portfolio.Common/bin/Debug/netcoreapp2.1
+/Portfolio/Portfolio.Common/obj/Debug/netcoreapp2.1
+/Portfolio/Portfolio.Dto/bin/Debug/netcoreapp2.1
+/Portfolio/Portfolio.Dto/obj/Debug/netcoreapp2.1
+/Portfolio/Portfolio.Repository/bin/Debug/netcoreapp2.1
+/Portfolio/Portfolio.Repository/obj/Debug/netcoreapp2.1
+/Portfolio/Portfolio.Service/bin/Debug/netcoreapp2.1
+/Portfolio/Portfolio.Service/obj/Debug/netcoreapp2.1
+/Portfolio/Portfolios.Api/bin/Debug/netcoreapp2.1
+/Portfolio/Portfolios.Api/obj/Debug/netcoreapp2.1
+/Portfolio/Portfolios.Api/Logs
+/Portfolio/Portfolios.Api/obj
+/Portfolio/Portfolio.Service/obj
+/Portfolio/Portfolio.Repository/obj
+/Portfolio/Portfolio.Dto/obj
+/Portfolio/Portfolio.Common/obj
+/Portfolio/.vs/config
+/Portfolio/.vs
