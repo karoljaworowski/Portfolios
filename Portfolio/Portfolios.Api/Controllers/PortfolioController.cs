@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Portfolios.Common.Enums;
 using Portfolios.Dto;
 using Portfolios.Service.Interfaces;
 using System;
@@ -27,6 +28,12 @@ namespace Portfolios.Api.Controllers
         public async Task<PortfolioDto> GetLast(string isin)
         {
             return await portfolioService.GetLastByIsinAsync(isin);
+        }
+
+        [HttpGet("{isin}/date/{date}/aggregate/{aggregationType}")]
+        public async Task<object> GetAggregated(string isin, DateTime date, AggregationType aggregationType)
+        {
+            return await portfolioService.GetAggregatedPositionsAsync(isin, date, aggregationType);
         }
 
         [HttpPost]

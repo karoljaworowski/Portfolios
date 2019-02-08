@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
+using Portfolios.Common.Enums;
 using Portfolios.Common.Validators;
 using Portfolios.Dto;
 using Portfolios.Repository.Models;
@@ -230,6 +232,86 @@ namespace Portfolios.Service.Services
                     Type = pos.Type
                 }).ToList()
             };
+        }
+
+        private IEnumerable<PortfolioPositionAggregatedDto> AggregatePositionByType(IEnumerable<Position> positions)
+        {
+            return positions
+                  .GroupBy(p => p.Type)
+                  .Select(g => new
+                  {
+                      Key = g.Key.ToString(),
+                      Value = g.Count(),
+                      SharePercentage = g.Select(p => p.SharePercentage).Sum()
+                  })
+                  .OrderByDescending(aggregation => aggregation.SharePercentage)
+                  .Select(result => new PortfolioPositionAggregatedDto(result.Key, result.Value.ToString()))
+                  .ToList();
+        }
+
+        private IEnumerable<PortfolioPositionAggregatedDto> AggregatePositionByCountry(IEnumerable<Position> positions)
+        {
+            return positions
+                   .GroupBy(p => p.Country)
+                   .Select(g => new
+                   {
+                       Key = g.Key,
+                       Value = g.Count(),
+                       SharePercentage = g.Select(p => p.SharePercentage).Sum()
+                   })
+                  .OrderByDescending(aggregation => aggregation.SharePercentage)
+                  .Select(result => new PortfolioPositionAggregatedDto(result.Key, result.Value.ToString()))
+                  .ToList();
+        }
+
+        private IEnumerable<PortfolioPositionAggregatedDto> AggregatePositionByCurrency(IEnumerable<Position> positions)
+        {
+            return positions
+                  .GroupBy(p => p.Currency)
+                  .Select(g => new
+                    {
+                        Key = g.Key,
+                        Value = g.Select(p => p.MarketValue).Sum(),
+                        SharePercentage = g.Select(p => p.SharePercentage).Sum()
+                    })
+                  .OrderByDescending(aggregation => aggregation.SharePercentage)
+                  .Select(result => new PortfolioPositionAggregatedDto(result.Key, result.Value.ToString()))
+                  .ToList();
+        }
+
+        public async Task<object> GetAggregatedPositionsAsync(string isin, DateTime date, AggregationType aggregationType)
+        {
+            Func<IEnumerable<Position>, IEnumerable<PortfolioPositionAggregatedDto>> aggregationFunction;
+            switch (aggregationType)
+            {
+                case AggregationType.Country:
+                    aggregationFunction = AggregatePositionByCountry;
+                    break;
+                case AggregationType.Currency:
+                    aggregationFunction = AggregatePositionByCurrency;
+                    break;
+                case AggregationType.Type:
+                    aggregationFunction = AggregatePositionByType;
+                    break;
+                default:
+                    aggregationFunction = AggregatePositionByCurrency;
+                    break;
+            }
+            
+            var aggregatedPositions = await portfolioRepository.GetFirstOrDefaultAsync(
+             predicate: p => p.ISIN == isin && p.Date == date.Date,
+             include: source => source.Include(p => p.Positions),
+                 selector: portfolio => aggregationFunction(portfolio.Positions).ToList());
+
+            JArray array = new JArray();
+            aggregatedPositions.ForEach(t => array.Add($"{t.Key}: {t.Value}"));
+
+            JObject typeResult = new JObject();
+            typeResult[aggregationType.ToString()] = array;
+
+            string json = typeResult.ToString();
+
+            return json;
         }
     }
 }

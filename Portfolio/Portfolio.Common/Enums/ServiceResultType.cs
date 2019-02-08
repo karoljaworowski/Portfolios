@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Portfolios.Common.Enums
+﻿namespace Portfolios.Common.Enums
 {
     public enum ServiceResultType : byte
     {
