@@ -17,7 +17,7 @@ namespace Portfolios.Api.Controllers
             this.portfolioService = portfolioService;
         }
 
-        [HttpGet("{isin}/date/{data}")]
+        [HttpGet("{isin}/date/{date}")]
         public async Task<PortfolioDto> Get(string isin, DateTime date)
         {
             return await portfolioService.GetAsync(isin, date);

@@ -45,7 +45,7 @@ namespace Portfolios.Service.Services
                 {
                     ISIN = portfolioDto.ISIN,
                     Date = portfolioDto.Date.Date,
-                    Currency = portfolioDto.Currency,
+                    Currency = portfolioDto.Currency.ToUpper(),
                     MarketValue = portfolioDto.Positions.Select(p => p.MarketValue).Sum(),
                     Positions = new List<Position>()
                 };
@@ -62,12 +62,12 @@ namespace Portfolios.Service.Services
                     Position position = new Position
                     {
                         ISIN = positionDto.ISIN,
-                        Country = positionDto.Country,
-                        Currency = positionDto.Currency,
+                        Country = positionDto.Country.ToUpper(),
+                        Currency = positionDto.Currency.ToUpper(),
                         Name = positionDto.Name,
                         Type = positionDto.Type,
                         MarketValue = positionDto.MarketValue,
-                        SharePercentage = (float)((positionDto.MarketValue / portfolio.MarketValue) * 100)
+                        SharePercentage = Math.Round((double)((positionDto.MarketValue / portfolio.MarketValue) * 100), 2)
                     };
 
                     portfolio.Positions.Add(position);
@@ -194,7 +194,26 @@ namespace Portfolios.Service.Services
 
         public async Task<PortfolioDto> GetAsync(string isin, DateTime date)
         {
-            var result = await portfolioRepository.GetFirstOrDefaultAsync(p => new PortfolioDto
+            var result = await portfolioRepository.GetFirstOrDefaultAsync(p => PortfolioToDto(p),
+                predicate: p => p.ISIN == isin && p.Date == date.Date,
+                include: source => source.Include(p => p.Positions));
+
+            return result;
+        }
+
+        public async Task<PortfolioDto> GetLastByIsinAsync(string isin)
+        {
+            var result = await portfolioRepository.GetFirstOrDefaultAsync(p => PortfolioToDto(p),
+                predicate: p => p.ISIN == isin,
+                orderBy: source => source.OrderByDescending(position => position.Date),
+                include: source => source.Include(p => p.Positions));
+
+            return result;
+        }
+
+        private PortfolioDto PortfolioToDto(Portfolio p)
+        {
+            return new PortfolioDto
             {
                 Currency = p.Currency,
                 Date = p.Date,
@@ -209,36 +228,8 @@ namespace Portfolios.Service.Services
                     Name = pos.Name,
                     SharePercentage = pos.SharePercentage,
                     Type = pos.Type
-                })
-            }, predicate: p => p.ISIN == isin && p.Date == date.Date);
-
-            return result;
-        }
-
-        public async Task<PortfolioDto> GetLastByIsinAsync(string isin)
-        {
-            var result = await portfolioRepository.GetFirstOrDefaultAsync(p => new PortfolioDto
-                {
-                    Currency = p.Currency,
-                    Date = p.Date,
-                    ISIN = p.ISIN,
-                    MarketValue = p.MarketValue,
-                    Positions = p.Positions.Select(pos => new PositionDto
-                    {
-                        ISIN = pos.ISIN,
-                        Country = pos.Country,
-                        Currency = pos.Currency,
-                        MarketValue = pos.MarketValue,
-                        Name = pos.Name,
-                        SharePercentage = pos.SharePercentage,
-                        Type = pos.Type
-                    })
-                },
-                predicate: p => p.ISIN == isin,
-                orderBy: source => source.OrderByDescending(position => position.Date)
-            );
-
-            return result;
+                }).ToList()
+            };
         }
     }
 }

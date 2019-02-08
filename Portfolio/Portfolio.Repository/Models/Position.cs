@@ -27,7 +27,7 @@ namespace Portfolios.Repository.Models
         public string Country { get; set; }
 
         [Required]
-        public float SharePercentage { get; set; }
+        public double SharePercentage { get; set; }
 
         [Required]
         public int PortfolioId { get; set; }

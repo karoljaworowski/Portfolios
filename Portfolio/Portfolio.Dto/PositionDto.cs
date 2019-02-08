@@ -16,7 +16,7 @@ namespace Portfolios.Dto
 
         public string Country { get; set; }
 
-        public float SharePercentage { get; set; }
+        public double SharePercentage { get; set; }
 
         public PortfolioDto Portfolio { get; set; }
     }
